@@ -39,13 +39,19 @@ func main() {
     language := fields[0]
     title    := fields[1]
 
+    // We only want pages from Wikipedia, not other projects
+    isNotWikipediaPage, err := regexp.MatchString("\\.", language)
+    if err!= nil {
+      panic(err)
+    }
+
     // Skip titles that contain prefixes like "Special:", "User:", etc.
-    matched, err := regexp.MatchString(":", title)
+    isNonStandardPage, err := regexp.MatchString(":", title)
     if err != nil {
       panic(err)
     }
 
-    if !matched {
+    if !isNotWikipediaPage && !isNonStandardPage {
       views, err := strconv.Atoi(fields[3])
       if err != nil {
         panic(err)
