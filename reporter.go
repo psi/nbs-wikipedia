@@ -24,7 +24,7 @@ func main() {
 
 	pages := session.DB(databaseName).C(sourceCollectionName)
 
-  // Find all of the languages we have records for
+	// Find all of the languages we have records for
 	var languages []string
 	err = pages.Find(bson.M{}).Distinct("language", &languages)
 
@@ -32,9 +32,9 @@ func main() {
 		panic(err)
 	}
 
-  // Launch a bunch of goroutines to calculate the top 10 pages per language.
-  // Ideally, these would be load-balanced to multiple MongoDB replica set read
-  // slaves, either by mgo's connection pooling or sitting behind HAProxy.
+	// Launch a bunch of goroutines to calculate the top 10 pages per language.
+	// Ideally, these would be load-balanced to multiple MongoDB replica set read
+	// slaves, either by mgo's connection pooling or sitting behind HAProxy.
 	var waitGroup sync.WaitGroup
 
 	for i := 0; i < len(languages); i++ {
@@ -56,8 +56,8 @@ func processLanguage(language string, waitGroup *sync.WaitGroup, mongoSession *m
 	pages := mongoSession.DB(databaseName).C(sourceCollectionName)
 	pages.Find(bson.M{"language": language}).Sort("-views").Limit(10).All(&topPages)
 
-  // If we were load-balancing reads behind HAProxy, we'd need to take care
-  // here to write back to the master MongoDB instance.
+	// If we were load-balancing reads behind HAProxy, we'd need to take care
+	// here to write back to the master MongoDB instance.
 	targetCollection := session.DB(databaseName).C("top_pages_" + language)
 	targetCollection.Insert(topPages)
 }

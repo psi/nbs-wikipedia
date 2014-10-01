@@ -23,7 +23,7 @@ func main() {
 	}
 	defer session.Close()
 
-  // This creates the wikipedia DB and the pages collection if they don't exist
+	// This creates the wikipedia DB and the pages collection if they don't exist
 	pages := session.DB("wikipedia").C("pages")
 
 	file, err := os.Open("/tmp/pagecounts.csv")
