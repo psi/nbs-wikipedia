@@ -7,7 +7,8 @@ import (
 	//"os"
 	//"regexp"
 	//"strconv"
-	//"strings"
+  //"strings"
+  //"sync"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -18,6 +19,9 @@ type Page struct {
 	Views    int
 }
 
+const databaseName = "wikipedia"
+const sourceCollectionName = "pages"
+
 func main() {
 	session, err := mgo.Dial("localhost")
 	if err != nil {
@@ -25,7 +29,7 @@ func main() {
 	}
 	defer session.Close()
 
-	pages := session.DB("wikipedia").C("pages")
+	pages := session.DB(databaseName).C(sourceCollectionName)
 
 	var languages []string
 	err = pages.Find(bson.M{}).Distinct("language", &languages)
@@ -38,11 +42,15 @@ func main() {
 		var topPages []Page
 		pages.Find(bson.M{"language": languages[i]}).Sort("-views").Limit(10).All(&topPages)
 
-		fmt.Println(languages[i], ":")
-		for j := 0; j < len(topPages); j++ {
-			fmt.Println(topPages[j].Title, ",", topPages[j].Views)
-		}
+    targetCollection := session.DB(databaseName).C("top_pages_" + languages[i])
 
-		fmt.Println()
+    targetCollection.Insert(topPages)
+
+		//fmt.Println(languages[i], ":")
+		//for j := 0; j < len(topPages); j++ {
+		//	fmt.Println(topPages[j].Title, ",", topPages[j].Views)
+		//}
+
+		//fmt.Println()
 	}
 }
