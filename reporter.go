@@ -45,6 +45,4 @@ func main() {
 
 		fmt.Println()
 	}
-
-	fmt.Println("Found ", len(languages), " languages")
 }
