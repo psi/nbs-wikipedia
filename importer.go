@@ -2,14 +2,12 @@ package main
 
 import (
 	"bufio"
-	//"fmt"
 	"gopkg.in/mgo.v2"
 	"log"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
-	//"gopkg.in/mgo.v2/bson"
 )
 
 type Page struct {
@@ -25,6 +23,7 @@ func main() {
 	}
 	defer session.Close()
 
+  // This creates the wikipedia DB and the pages collection if they don't exist
 	pages := session.DB("wikipedia").C("pages")
 
 	file, err := os.Open("/tmp/pagecounts.csv")
