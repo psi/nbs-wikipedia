@@ -7,5 +7,12 @@ all: clean deps
 deps:
 	go get gopkg.in/mgo.v2
 
+release: all
+	rm build/.gitkeep
+	tar -C build -cpzvf nbs-wikipedia.tar.gz .
+	touch build/.gitkeep
+
+
 clean:
 	rm -f build/*
+	rm -f nbs-wikipedia.tar.gz
