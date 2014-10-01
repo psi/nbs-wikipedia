@@ -2,15 +2,15 @@ package main
 
 import (
 	//"bufio"
-	"fmt"
+	//"fmt"
 	//"log"
 	//"os"
 	//"regexp"
 	//"strconv"
-  //"strings"
-  //"sync"
+	//"strings"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"sync"
 )
 
 type Page struct {
@@ -38,19 +38,27 @@ func main() {
 		panic(err)
 	}
 
+	var waitGroup sync.WaitGroup
+
 	for i := 0; i < len(languages); i++ {
-		var topPages []Page
-		pages.Find(bson.M{"language": languages[i]}).Sort("-views").Limit(10).All(&topPages)
-
-    targetCollection := session.DB(databaseName).C("top_pages_" + languages[i])
-
-    targetCollection.Insert(topPages)
-
-		//fmt.Println(languages[i], ":")
-		//for j := 0; j < len(topPages); j++ {
-		//	fmt.Println(topPages[j].Title, ",", topPages[j].Views)
-		//}
-
-		//fmt.Println()
+		waitGroup.Add(1)
+		go processLanguage(languages[i], &waitGroup, session)
 	}
+
+	waitGroup.Wait()
+}
+
+func processLanguage(language string, waitGroup *sync.WaitGroup, mongoSession *mgo.Session) {
+	defer waitGroup.Done()
+
+	session := mongoSession.Copy()
+	defer session.Close()
+
+	var topPages []Page
+
+	pages := mongoSession.DB(databaseName).C(sourceCollectionName)
+	pages.Find(bson.M{"language": language}).Sort("-views").Limit(10).All(&topPages)
+
+	targetCollection := session.DB(databaseName).C("top_pages_" + language)
+	targetCollection.Insert(topPages)
 }
